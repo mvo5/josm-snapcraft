@@ -1,0 +1,63 @@
+name: josm
+summary: Editor for OpenStreetMap
+description: |
+ JOSM is an editor for OpenStreetMap (OSM) written in Java.
+ The current version supports stand alone GPX tracks, GPX track data
+ from OSM database and existing nodes, line segments and metadata tags
+ from the OSM database.
+ 
+ OpenStreetMap is a project aimed squarely at creating and providing
+ free geographic data such as street maps to anyone who wants them.
+ The project was started because most maps you think of as free actually
+ have legal or technical restrictions on their use, holding back people
+ from using them in creative, productive or unexpected ways.
+confinement: strict
+grade: stable
+icon: josm.png
+base: core18
+adopt-info: josm
+
+apps:
+ josm:
+   command: josm-launch
+   desktop: org.openstreetmap.josm.desktop
+   plugs: [desktop, desktop-legacy, network, home, unity7]
+
+parts:
+    josm:
+        plugin: ant
+        ant-properties:
+            dist.dir: $SNAPCRAFT_PART_INSTALL
+        source: .
+        stage-packages: [fonts-droid-fallback, subversion]
+        override-build: |
+            URL=https://josm.openstreetmap.de/josm-tested.jar
+            # download for now instead of building, see ticket
+            #  https://josm.openstreetmap.de/ticket/19173
+            # (builds under linux seem to be not working right now)
+            curl "$URL" -o $SNAPCRAFT_PART_INSTALL/josm-custom.jar
+            # figure out the version
+            jar xvf  $SNAPCRAFT_PART_INSTALL/josm-custom.jar REVISION
+            VERSION="$(grep "Last Changed Rev:" REVISION | cut -f2 -d: | sed -e 's/^[[:space:]]*//' )"
+            snapcraftctl set-version r"$VERSION"
+
+            # get desktop file and customize
+            svn co -r $VERSION http://josm.openstreetmap.de/svn/trunk/native/linux/tested/usr/share/applications/
+            mv applications/org.openstreetmap.josm.desktop $SNAPCRAFT_PART_INSTALL/
+            sed -i 's#Icon=org.openstreetmap.josm#Icon=${SNAP}/meta/gui/icon.png#' $SNAPCRAFT_PART_INSTALL/org.openstreetmap.josm.desktop
+            cat<<'EOF' > $SNAPCRAFT_PART_INSTALL/josm-launch
+            #!/bin/sh
+            # ensure font-config is happy
+            # setting this breaks the app for unknown reasons
+            #export XDG_DATA_HOME=$SNAP/usr/share
+            export XDG_DATA_DIRS=$SNAP/usr/share
+            export FONTCONFIG_PATH=$SNAP/etc/fonts/config.d
+            export FONTCONFIG_FILE=$SNAP/etc/fonts/fonts.conf
+            export HOME=$SNAP_USER_DATA
+            # ensure java is happy as well
+            export JRE_HOME=$SNAP/usr/lib/jvm/default-java/jre
+            export JAVA_HOME=$SNAP/usr/lib/jvm/default-java/jre
+            $SNAP/usr/lib/jvm/java-11-openjdk-amd64/bin/java -Duser.home=$SNAP_USER_DATA -jar $SNAP/josm-custom.jar
+            EOF
+            chmod +x $SNAPCRAFT_PART_INSTALL/josm-launch
+
