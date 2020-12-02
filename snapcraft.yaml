@@ -58,7 +58,7 @@ parts:
             # ensure java is happy as well
             export JRE_HOME=$SNAP/usr/lib/jvm/default-java/jre
             export JAVA_HOME=$SNAP/usr/lib/jvm/default-java/jre
-            $SNAP/usr/lib/jvm/java-11-openjdk-amd64/bin/java -Duser.home=$SNAP_USER_DATA -jar $SNAP/josm-custom.jar
+            $SNAP/usr/lib/jvm/java-11-openjdk-${SNAP_ARCH}/bin/java -Duser.home=$SNAP_USER_DATA -jar $SNAP/josm-custom.jar
             EOF
             chmod +x $SNAPCRAFT_PART_INSTALL/josm-launch
 
