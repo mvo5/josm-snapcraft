@@ -29,8 +29,8 @@ parts:
         ant-properties:
             dist.dir: $SNAPCRAFT_PART_INSTALL
         source: .
-        stage-packages: [fonts-droid-fallback, subversion]
-        build-packages: [curl]
+        build-packages: [curl, openjdk-11-jre, ca-certificates, ca-certificates-java]
+        stage-packages: [fonts-droid-fallback, subversion, openjdk-11-jre, ca-certificates-java]
         override-build: |
             URL=https://josm.openstreetmap.de/josm-tested.jar
             # download for now instead of building, see ticket
