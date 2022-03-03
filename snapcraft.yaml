@@ -14,7 +14,7 @@ description: |
 confinement: strict
 grade: stable
 icon: josm.png
-base: core18
+base: core20
 adopt-info: josm
 
 apps:
@@ -27,7 +27,7 @@ parts:
     josm:
         plugin: nil
         source: .
-        build-packages: [curl, openjdk-11-jdk-headless, ca-certificates, ca-certificates-java]
+        build-packages: [curl, openjdk-11-jdk-headless, ca-certificates, ca-certificates-java, subversion]
         stage-packages: [fonts-droid-fallback, subversion, openjdk-11-jre, ca-certificates-java]
         override-build: |
             URL=https://josm.openstreetmap.de/josm-tested.jar
