@@ -59,4 +59,5 @@ parts:
             $SNAP/usr/lib/jvm/java-11-openjdk-${SNAP_ARCH}/bin/java -Duser.home=$SNAP_USER_DATA -jar $SNAP/josm-custom.jar
             EOF
             chmod +x $SNAPCRAFT_PART_INSTALL/josm-launch
-
+            # XXX: workaround for "XXX: package contains external symlinks: usr/lib/jvm/java-11-openjdk-amd64/lib/security/blacklisted.certs -> /etc/java-11-openjdk/security/blacklisted.certs"
+            rm $SNAPCRAFT_PART_INSTALL/usr/lib/jvm/java-11-openjdk-amd64/lib/security/blacklisted.certs
