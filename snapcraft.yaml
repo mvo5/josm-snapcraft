@@ -56,7 +56,7 @@ parts:
             # ensure java is happy as well
             export JRE_HOME=$SNAP/usr/lib/jvm/default-java/jre
             export JAVA_HOME=$SNAP/usr/lib/jvm/default-java/jre
-            $SNAP/usr/lib/jvm/java-11-openjdk-${SNAP_ARCH}/bin/java -Duser.home=$SNAP_USER_DATA -jar $SNAP/josm-custom.jar
+            $SNAP/usr/lib/jvm/java-11-openjdk-${SNAP_ARCH}/bin/java --add-exports=java.base/sun.security.action=ALL-UNNAMED --add-exports=java.desktop/com.sun.imageio.plugins.jpeg=ALL-UNNAMED --add-exports=java.desktop/com.sun.imageio.spi=ALL-UNNAMED -Duser.home=$SNAP_USER_DATA -jar $SNAP/josm-custom.jar
             EOF
             chmod +x $SNAPCRAFT_PART_INSTALL/josm-launch
             # XXX: workaround for "XXX: package contains external symlinks: usr/lib/jvm/java-11-openjdk-amd64/lib/security/blacklisted.certs -> /etc/java-11-openjdk/security/blacklisted.certs"
