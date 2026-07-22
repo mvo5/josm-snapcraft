@@ -5,7 +5,7 @@ description: |
  The current version supports stand alone GPX tracks, GPX track data
  from OSM database and existing nodes, line segments and metadata tags
  from the OSM database.
- 
+
  OpenStreetMap is a project aimed squarely at creating and providing
  free geographic data such as street maps to anyone who wants them.
  The project was started because most maps you think of as free actually
@@ -14,8 +14,11 @@ description: |
 confinement: strict
 grade: stable
 icon: josm.png
-base: core20
+base: core24
 adopt-info: josm
+
+platforms:
+  amd64:
 
 apps:
  josm:
@@ -27,24 +30,24 @@ parts:
     josm:
         plugin: nil
         source: .
-        build-packages: [curl, openjdk-11-jdk-headless, ca-certificates, ca-certificates-java, subversion]
-        stage-packages: [fonts-droid-fallback, subversion, openjdk-11-jre, ca-certificates-java]
+        build-packages: [curl, openjdk-21-jdk-headless, ca-certificates, ca-certificates-java, subversion]
+        stage-packages: [fonts-droid-fallback, subversion, openjdk-21-jre, ca-certificates-java]
         override-build: |
             URL=https://josm.openstreetmap.de/josm-tested.jar
             # download for now instead of building, see ticket
             #  https://josm.openstreetmap.de/ticket/19173
             # (builds under linux seem to be not working right now)
-            curl "$URL" -o $SNAPCRAFT_PART_INSTALL/josm-custom.jar
+            curl "$URL" -o $CRAFT_PART_INSTALL/josm-custom.jar
             # figure out the version
-            jar xvf  $SNAPCRAFT_PART_INSTALL/josm-custom.jar REVISION
+            jar xvf  $CRAFT_PART_INSTALL/josm-custom.jar REVISION
             VERSION="$(grep "Last Changed Rev:" REVISION | cut -f2 -d: | sed -e 's/^[[:space:]]*//' )"
-            snapcraftctl set-version r"$VERSION"
+            craftctl set version=r"$VERSION"
 
             # get desktop file and customize
             svn co -r $VERSION http://josm.openstreetmap.de/svn/trunk/native/linux/tested/usr/share/applications/
-            mv applications/org.openstreetmap.josm.desktop $SNAPCRAFT_PART_INSTALL/
-            sed -i 's#Icon=org.openstreetmap.josm#Icon=${SNAP}/meta/gui/icon.png#' $SNAPCRAFT_PART_INSTALL/org.openstreetmap.josm.desktop
-            cat<<'EOF' > $SNAPCRAFT_PART_INSTALL/josm-launch
+            mv applications/org.openstreetmap.josm.desktop $CRAFT_PART_INSTALL/
+            sed -i 's#Icon=org.openstreetmap.josm#Icon=${SNAP}/meta/gui/icon.png#' $CRAFT_PART_INSTALL/org.openstreetmap.josm.desktop
+            cat<<'EOF' > $CRAFT_PART_INSTALL/josm-launch
             #!/bin/sh
             # ensure font-config is happy
             # setting this breaks the app for unknown reasons
@@ -54,10 +57,12 @@ parts:
             export FONTCONFIG_FILE=$SNAP/etc/fonts/fonts.conf
             export HOME=$SNAP_USER_DATA
             # ensure java is happy as well
-            export JRE_HOME=$SNAP/usr/lib/jvm/default-java/jre
-            export JAVA_HOME=$SNAP/usr/lib/jvm/default-java/jre
-            $SNAP/usr/lib/jvm/java-11-openjdk-${SNAP_ARCH}/bin/java --add-exports=java.base/sun.security.action=ALL-UNNAMED --add-exports=java.desktop/com.sun.imageio.plugins.jpeg=ALL-UNNAMED --add-exports=java.desktop/com.sun.imageio.spi=ALL-UNNAMED -Duser.home=$SNAP_USER_DATA -jar $SNAP/josm-custom.jar
+            export JRE_HOME=$SNAP/usr/lib/jvm/default-java
+            export JAVA_HOME=$SNAP/usr/lib/jvm/default-java
+            $SNAP/usr/lib/jvm/java-21-openjdk-${SNAP_ARCH}/bin/java --add-exports=java.base/sun.security.action=ALL-UNNAMED --add-exports=java.desktop/com.sun.imageio.plugins.jpeg=ALL-UNNAMED --add-exports=java.desktop/com.sun.imageio.spi=ALL-UNNAMED -Duser.home=$SNAP_USER_DATA -jar $SNAP/josm-custom.jar
             EOF
-            chmod +x $SNAPCRAFT_PART_INSTALL/josm-launch
-            # XXX: workaround for "XXX: package contains external symlinks: usr/lib/jvm/java-11-openjdk-amd64/lib/security/blacklisted.certs -> /etc/java-11-openjdk/security/blacklisted.certs"
-            rm $SNAPCRAFT_PART_INSTALL/usr/lib/jvm/java-11-openjdk-amd64/lib/security/blacklisted.certs
+            chmod +x $CRAFT_PART_INSTALL/josm-launch
+            # remove symlinks pointing outside the snap (snapcraft rejects
+            # external symlinks); the staged ca-certificates-java keystore is
+            # used via JAVA_HOME instead
+            find $CRAFT_PART_INSTALL/usr/lib/jvm -xtype l -delete || true
